@@ -1,0 +1,85 @@
+=== Log started at 2025-03-05 18:32:56 ===
+
+[18:32:56.819] Port 5556 is in use (Address already in use (addr='tcp://*:5556')), trying next port...
+[18:32:56.921] Market maker bound to port 5557
+[18:32:56.924] Market maker started and waiting for orders...
+[18:32:56.931] Agent 1 started
+[18:32:56.933] Agent 2 started
+[18:32:56.935] Agent 3 started
+[18:32:58.677] Agent 3 sending order: ((3) [18:32:58.677053] SELL 290 LIMIT $100.10)
+[18:32:58.680] Market maker received message: {'account_id': 3, 'side': 'SELL', 'quantity': 290, 'order_type': 'LIMIT', 'price': 100.1, 'timestamp': '2025-03-05T18:32:58.677053'}
+[18:32:58.681] Agent 3 received response: {'status': 'success'}
+[18:32:59.230] Agent 1 sending order: ((1) [18:32:59.230112] BUY 170 LIMIT $99.96)
+[18:32:59.235] Market maker received message: {'account_id': 1, 'side': 'BUY', 'quantity': 170, 'order_type': 'LIMIT', 'price': 99.96, 'timestamp': '2025-03-05T18:32:59.230112'}
+[18:32:59.238] Agent 1 received response: {'status': 'success'}
+[18:32:59.707] Agent 2 sending order: ((2) [18:32:59.707711] SELL 280 LIMIT $99.82)
+[18:32:59.711] Market maker received message: {'account_id': 2, 'side': 'SELL', 'quantity': 280, 'order_type': 'LIMIT', 'price': 99.82, 'timestamp': '2025-03-05T18:32:59.707711'}
+[18:32:59.736] Agent 2 received response: {'status': 'success'}
+[18:33:00.999] Agent 3 sending order: ((3) [18:33:00.999728] SELL 260 LIMIT $99.62)
+[18:33:01.003] Market maker received message: {'account_id': 3, 'side': 'SELL', 'quantity': 260, 'order_type': 'LIMIT', 'price': 99.62, 'timestamp': '2025-03-05T18:33:00.999728'}
+[18:33:01.024] Agent 3 received response: {'status': 'success'}
+[18:33:01.689] Agent 2 sending order: ((2) [18:33:01.689526] BUY 60 LIMIT $99.90)
+[18:33:01.694] Market maker received message: {'account_id': 2, 'side': 'BUY', 'quantity': 60, 'order_type': 'LIMIT', 'price': 99.9, 'timestamp': '2025-03-05T18:33:01.689526'}
+[18:33:01.697] Agent 2 received response: {'status': 'success'}
+[18:33:02.071] Agent 1 sending order: ((1) [18:33:02.071832] SELL 290 LIMIT $100.14)
+[18:33:02.074] Market maker received message: {'account_id': 1, 'side': 'SELL', 'quantity': 290, 'order_type': 'LIMIT', 'price': 100.14, 'timestamp': '2025-03-05T18:33:02.071832'}
+[18:33:02.078] Agent 1 received response: {'status': 'success'}
+[18:33:03.426] Agent 2 sending order: ((2) [18:33:03.426182] SELL 90 LIMIT $99.53)
+[18:33:03.429] Market maker received message: {'account_id': 2, 'side': 'SELL', 'quantity': 90, 'order_type': 'LIMIT', 'price': 99.53, 'timestamp': '2025-03-05T18:33:03.426182'}
+[18:33:03.442] Agent 2 received response: {'status': 'success'}
+[18:33:03.621] Agent 3 sending order: ((3) [18:33:03.621632] BUY 300 LIMIT $100.40)
+[18:33:03.624] Market maker received message: {'account_id': 3, 'side': 'BUY', 'quantity': 300, 'order_type': 'LIMIT', 'price': 100.4, 'timestamp': '2025-03-05T18:33:03.621632'}
+[18:33:03.642] Agent 3 received response: {'status': 'success'}
+[18:33:03.713] Agent 1 sending order: ((1) [18:33:03.713381] SELL 90 LIMIT $100.26)
+[18:33:03.716] Market maker received message: {'account_id': 1, 'side': 'SELL', 'quantity': 90, 'order_type': 'LIMIT', 'price': 100.26, 'timestamp': '2025-03-05T18:33:03.713381'}
+[18:33:03.720] Agent 1 received response: {'status': 'success'}
+[18:33:04.891] Agent 3 sending order: ((3) [18:33:04.891184] SELL 250 LIMIT $99.54)
+[18:33:04.893] Market maker received message: {'account_id': 3, 'side': 'SELL', 'quantity': 250, 'order_type': 'LIMIT', 'price': 99.54, 'timestamp': '2025-03-05T18:33:04.891184'}
+[18:33:04.914] Agent 3 received response: {'status': 'success'}
+[18:33:05.180] Agent 2 sending order: ((2) [18:33:05.180175] BUY 300 LIMIT $99.60)
+[18:33:05.183] Market maker received message: {'account_id': 2, 'side': 'BUY', 'quantity': 300, 'order_type': 'LIMIT', 'price': 99.6, 'timestamp': '2025-03-05T18:33:05.180175'}
+[18:33:05.186] Agent 2 received response: {'status': 'success'}
+[18:33:05.511] Agent 1 sending order: ((1) [18:33:05.511613] BUY 30 LIMIT $99.52)
+[18:33:05.515] Market maker received message: {'account_id': 1, 'side': 'BUY', 'quantity': 30, 'order_type': 'LIMIT', 'price': 99.52, 'timestamp': '2025-03-05T18:33:05.511613'}
+[18:33:05.518] Agent 1 received response: {'status': 'success'}
+[18:33:07.597] Agent 2 sending order: ((2) [18:33:07.597365] SELL 240 LIMIT $99.60)
+[18:33:07.600] Market maker received message: {'account_id': 2, 'side': 'SELL', 'quantity': 240, 'order_type': 'LIMIT', 'price': 99.6, 'timestamp': '2025-03-05T18:33:07.597365'}
+[18:33:07.603] Agent 2 received response: {'status': 'success'}
+[18:33:07.649] Agent 3 sending order: ((3) [18:33:07.649281] BUY 190 LIMIT $99.88)
+[18:33:07.652] Market maker received message: {'account_id': 3, 'side': 'BUY', 'quantity': 190, 'order_type': 'LIMIT', 'price': 99.88, 'timestamp': '2025-03-05T18:33:07.649281'}
+[18:33:07.660] Agent 3 received response: {'status': 'success'}
+[18:33:08.160] Agent 1 sending order: ((1) [18:33:08.160059] SELL 60 LIMIT $100.43)
+[18:33:08.163] Market maker received message: {'account_id': 1, 'side': 'SELL', 'quantity': 60, 'order_type': 'LIMIT', 'price': 100.43, 'timestamp': '2025-03-05T18:33:08.160059'}
+[18:33:08.166] Agent 1 received response: {'status': 'success'}
+[18:33:08.712] Agent 2 sending order: ((2) [18:33:08.712681] BUY 460 LIMIT $100.25)
+[18:33:08.716] Market maker received message: {'account_id': 2, 'side': 'BUY', 'quantity': 460, 'order_type': 'LIMIT', 'price': 100.25, 'timestamp': '2025-03-05T18:33:08.712681'}
+[18:33:08.735] Agent 2 received response: {'status': 'success'}
+[18:33:08.804] Agent 3 sending order: ((3) [18:33:08.804515] SELL 80 LIMIT $99.69)
+[18:33:08.807] Market maker received message: {'account_id': 3, 'side': 'SELL', 'quantity': 80, 'order_type': 'LIMIT', 'price': 99.69, 'timestamp': '2025-03-05T18:33:08.804515'}
+[18:33:08.810] Agent 3 received response: {'status': 'success'}
+[18:33:09.592] Agent 1 sending order: ((1) [18:33:09.592497] BUY 150 LIMIT $100.46)
+[18:33:09.596] Market maker received message: {'account_id': 1, 'side': 'BUY', 'quantity': 150, 'order_type': 'LIMIT', 'price': 100.46, 'timestamp': '2025-03-05T18:33:09.592497'}
+[18:33:09.607] Agent 1 received response: {'status': 'success'}
+[18:33:10.177] Agent 3 sending order: ((3) [18:33:10.177596] BUY 200 LIMIT $100.45)
+[18:33:10.181] Market maker received message: {'account_id': 3, 'side': 'BUY', 'quantity': 200, 'order_type': 'LIMIT', 'price': 100.45, 'timestamp': '2025-03-05T18:33:10.177596'}
+[18:33:10.192] Agent 3 received response: {'status': 'success'}
+[18:33:10.703] Agent 2 sending order: ((2) [18:33:10.703336] SELL 190 LIMIT $99.52)
+[18:33:10.707] Market maker received message: {'account_id': 2, 'side': 'SELL', 'quantity': 190, 'order_type': 'LIMIT', 'price': 99.52, 'timestamp': '2025-03-05T18:33:10.703336'}
+[18:33:10.725] Agent 2 received response: {'status': 'success'}
+[18:33:12.260] Agent 1 sending order: ((1) [18:33:12.260421] SELL 100 LIMIT $99.89)
+[18:33:12.263] Market maker received message: {'account_id': 1, 'side': 'SELL', 'quantity': 100, 'order_type': 'LIMIT', 'price': 99.89, 'timestamp': '2025-03-05T18:33:12.260421'}
+[18:33:12.266] Agent 1 received response: {'status': 'success'}
+[18:33:12.629] Agent 3 sending order: ((3) [18:33:12.629931] SELL 330 LIMIT $99.88)
+[18:33:12.633] Market maker received message: {'account_id': 3, 'side': 'SELL', 'quantity': 330, 'order_type': 'LIMIT', 'price': 99.88, 'timestamp': '2025-03-05T18:33:12.629931'}
+[18:33:12.636] Agent 3 received response: {'status': 'success'}
+[18:33:12.967] Agent 2 sending order: ((2) [18:33:12.967155] SELL 190 LIMIT $100.07)
+[18:33:12.970] Market maker received message: {'account_id': 2, 'side': 'SELL', 'quantity': 190, 'order_type': 'LIMIT', 'price': 100.07, 'timestamp': '2025-03-05T18:33:12.967155'}
+[18:33:12.974] Agent 2 received response: {'status': 'success'}
+[18:33:13.222] Market maker shutting down...
+[18:33:13.225] Market maker cleanup complete.
+[18:33:13.227] Agent 1 shutting down...
+[18:33:13.228] Agent 2 shutting down...
+[18:33:13.230] Agent 3 shutting down...
+[18:33:13.234] Shutdown initiated...
+[18:33:13.236] Cleaning up...
+[18:33:13.238] Cleanup complete.

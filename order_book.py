@@ -1,36 +1,12 @@
-from pydantic import BaseModel
-from enums import *
-
 import heapq
 import random
-import math
 from collections import deque
 from rich.table import Table
 from rich.console import Console
-from datetime import datetime
 
 from clearing_house import ClearingHouse, ClearingOrder
-
-
-class Order(BaseModel):
-    account_id: int
-    side: OrderSide
-    quantity: int
-    order_type: OrderType
-    price: float | None = None
-    timestamp: datetime | None = None
-
-    def __str__(self):
-        if self.timestamp is not None:
-            if self.order_type == OrderType.MARKET:
-                return f"(({self.account_id}) [{self.timestamp.strftime('%H:%M:%S.%f')[:-4]}] {self.side.name} {self.quantity} MARKET)"
-            else:
-                return f"(({self.account_id}) [{self.timestamp.strftime('%H:%M:%S.%f')[:-4]}] {self.side.name} {self.quantity} LIMIT ${self.price:.2f})"
-        else:
-            if self.order_type == OrderType.MARKET:
-                return f"(({self.account_id}) {self.side.name} {self.quantity} MARKET)"
-            else:
-                return f"(({self.account_id}) {self.side.name} {self.quantity} LIMIT ${self.price:.2f})"
+from utils import Order
+from enums import *
 
 class OrderQueue:
     def __init__(self):
@@ -278,8 +254,6 @@ class OrderBook:
 
     # ----------------- PRINTING METHODS -----------------  
     def print_table(self):
-        console = Console()
-
         table = Table(title="Order Book")
         table.add_column("Bid Volume", justify="right", header_style="bold")
         table.add_column("Price", justify="center", header_style="bold")
@@ -321,8 +295,7 @@ class OrderBook:
             else:
                 table.add_row(f"{bid_vol_str}", f"[sandy_brown]${price:.2f}[/sandy_brown]", f"{ask_vol_str}")
             
-            
-        console.print(table)
+        return table
         
     def __str__(self):
         output_str = ""
