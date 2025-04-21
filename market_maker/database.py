@@ -35,7 +35,8 @@ class Database:
         if self.ask_heap.peek_bottom_ask() is None:
             return self.bid_heap.peek_top_bid().price
         
-        return (self.bid_heap.peek_top_bid().price + self.ask_heap.peek_bottom_ask().price) / 2
+        reference_price = (self.bid_heap.peek_top_bid().price + self.ask_heap.peek_bottom_ask().price) / 2
+        return round(reference_price, 3)
     
     def get_snapshot(self) -> dict:
         """Get a snapshot of the market.

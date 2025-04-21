@@ -75,10 +75,11 @@ class BaseTradingAgent:
             raise e
     
     def close(self):
+        self.order_socket.close()
         self.market_data_sub_socket.close()
+        self.market_data_req_socket.close()
         self.orchestrator_commands_socket.close()
         self.orchestrator_responses_socket.close()
-        self.order_socket.close()
     
 
 class DumbTradingAgent(BaseTradingAgent, threading.Thread):
@@ -87,6 +88,7 @@ class DumbTradingAgent(BaseTradingAgent, threading.Thread):
         self._running = True
 
         BaseTradingAgent.__init__(self, agent_id, context)
+        logger.debug(f"Dumb trading agent {agent_id} initialized")
 
     def run(self):
         while self._running:
@@ -129,7 +131,8 @@ class DumbTradingAgent(BaseTradingAgent, threading.Thread):
 
     def stop(self):
         self._running = False
-        logger.info(f"AGENT {self.agent_id} stopping")
+        logger.debug(f"AGENT {self.agent_id} stopping")
         time.sleep(0.1)
         self.close()
+        logger.info(f"AGENT {self.agent_id} stopped")
     

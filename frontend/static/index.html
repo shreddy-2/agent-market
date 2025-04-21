@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Market Maker</title>
+    </head>
+    <body>
+        <h1>Market Maker</h1>
+        <h2>Hello There!</h2>
+        <p id="reference_price">Reference Price: </p>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <div style="width: 100%; height: 500px;">
+            <canvas id="myChart"></canvas>
+        </div>
+        <script>
+            const ctx = document.getElementById('myChart').getContext('2d');
+
+            const myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Price',
+                        data: [],
+                    }]
+                }
+            });
+            async function fetchData() {
+                const response = await fetch('/plot_data');
+                const data = await response.json();
+                console.log(data);
+                document.getElementById('reference_price').innerHTML = `Reference Price: ${data.price[data.price.length - 1]}`;
+                myChart.data.labels = data.timestamp;
+                myChart.data.datasets[0].data = data.price;
+                myChart.update();
+            }
+            setInterval(fetchData, 1000);
+        </script>
+    </body>
+</html>
