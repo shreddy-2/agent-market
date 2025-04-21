@@ -2,12 +2,12 @@ import sys
 import os
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import OrderSide, OrderType
+from utils import Order, Snapshot
 from market_maker.clearing_house import ClearingHouse
 from pydantic import BaseModel
 from datetime import datetime
 from collections import deque
-
+from queue import Queue
 import heapq
 
 
@@ -22,76 +22,38 @@ class Database:
         self.ask_heap = AskHeap()
         self.clearing_house = ClearingHouse()
 
-
-class Order(BaseModel):
-    """A model representing a trading order in the system.
-    Supports both market and limit orders for buying and selling,
-    with optional price and timestamp fields. Implements serialization
-    methods for network transmission.
+        self.market_snapshot_queue = Queue()
+        self.last_trade = (None, None)    # Price, volume
     
-    Attributes:
-        account_id (str): ID of the account placing the order
-        side (OrderSide): Buy or sell indicator
-        quantity (int): Number of shares to trade
-        order_type (OrderType): Market or limit order type
-        price (float | None): Limit price, or None for market orders
-        timestamp (datetime | None): When the order was created
-    """
-    account_id: str
-    side: OrderSide
-    quantity: int
-    order_type: OrderType
-    price: float | None = None
-    timestamp: datetime | None = None
-
-    def __str__(self):
-        if self.timestamp is not None:
-            if self.order_type == OrderType.MARKET:
-                return f"([{self.timestamp.strftime('%H:%M:%S.%f')}] ({self.account_id}) {self.side.name} {self.quantity} MARKET)"
-            else:
-                return f"([{self.timestamp.strftime('%H:%M:%S.%f')}] ({self.account_id}) {self.side.name} {self.quantity} LIMIT ${self.price:.2f})"
-        else:
-            if self.order_type == OrderType.MARKET:
-                return f"(({self.account_id}) {self.side.name} {self.quantity} MARKET)"
-            else:
-                return f"(({self.account_id}) {self.side.name} {self.quantity} LIMIT ${self.price:.2f})"
-            
-    def model_dump(self):
-        """Convert the order to a dictionary format for serialization.
-        Timestamp is converted to ISO format.
+    def get_reference_price(self) -> float:
+        """Get the reference price of the order book.
+        Returns the midpoint of the highest bid and lowest ask.
+        """
+        if self.bid_heap.peek_top_bid() is None:
+            return self.ask_heap.peek_bottom_ask().price
         
-        Returns:
-            dict: Dictionary representation of the order
-        """
-        return {
-            "account_id": self.account_id,
-            "side": self.side.name,
-            "quantity": self.quantity,
-            "order_type": self.order_type.name,
-            "price": self.price,
-            "timestamp": self.timestamp.isoformat() if self.timestamp is not None else None
-        }
+        if self.ask_heap.peek_bottom_ask() is None:
+            return self.bid_heap.peek_top_bid().price
+        
+        return (self.bid_heap.peek_top_bid().price + self.ask_heap.peek_bottom_ask().price) / 2
     
-    @classmethod
-    def model_validate_json(cls, order_dict: dict):
-        """Class method to create an Order instance from a dictionary representation.
-        Timestamp is converted from an ISO format string back to a datetime object.
-
-        Args:
-            order_dict (dict): Dictionary containing order data
-            
-        Returns:
-            Order: New Order instance
+    def get_snapshot(self) -> dict:
+        """Get a snapshot of the market.
+        Returns a dictionary containing the reference price, last trade info, top bid and ask, and timestamp.
         """
-        account_id = order_dict["account_id"]
-        side = OrderSide[order_dict["side"]]
-        quantity = order_dict["quantity"]
-        order_type = OrderType[order_dict["order_type"]]
-        price = order_dict["price"]
-        # timestamp = datetime.strptime(order_dict["timestamp"], '%H:%M:%S.%f') if order_dict["timestamp"] is not None else None
-        timestamp = datetime.fromisoformat(order_dict["timestamp"]) if order_dict["timestamp"] is not None else None
-        return cls(account_id=account_id, side=side, quantity=quantity, order_type=order_type, price=price, timestamp=timestamp)
+        return Snapshot(
+            reference_price=self.get_reference_price(),
+            last_trade_price=self.last_trade[0],
+            last_trade_volume=self.last_trade[1],
+            top_bid=self.bid_heap.peek_top_bid(),
+            top_ask=self.ask_heap.peek_bottom_ask(),
+            timestamp=datetime.now()
+        )
     
+    def snapshot(self):
+        """Snapshot the market and add it to the queue."""
+        snapshot = self.get_snapshot()
+        self.market_snapshot_queue.put(snapshot)
 
 
 class OrderQueue:

@@ -1,6 +1,6 @@
-from market_maker.database import Database, Order
+from market_maker.database import Database
 from market_maker.order_service import OrderBook
-from utils import Message, MessageType
+from utils import Message, MessageType, Order
 from config import ZMQConfig
 
 import threading
@@ -25,22 +25,24 @@ class OrderRouter(threading.Thread):
         self.socket.bind(f"{ZMQConfig.ORDER_ROUTER_HOST}:{ZMQConfig.ORDER_ROUTER_PORT}")
 
     def run(self):
+       logger.info("Order router running")
        while self._running:
            # Get message from socket
            try:
                message = self.socket.recv_json()
+               logger.debug(f"Order router received message: {message}")
            except zmq.ZMQError:
                if self._running:
                    raise
            
            # If message is an order, send to order book
-           if message.get("message_type") == MessageType.ORDER:
+           if message.get("message_type") == "ORDER":
                if not self._running:
                    continue
                order = Order.model_validate_json(message.get("data"))
-               logger.info(f"Order router received order: {order}")
+               logger.debug(f"Order router received order: {order}")
                self.order_book.send_order(order)
-               logger.info(f"MARKET MAKER: \n{self.order_book}\n")
+               logger.debug(f"MARKET MAKER: \n{self.order_book}\n")
 
     def stop(self):
         logger.info("Stopping order router")

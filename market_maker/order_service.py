@@ -3,8 +3,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import OrderSide, OrderType, mini_uuid
-from market_maker.database import Database, Order
+from utils import OrderSide, OrderType, mini_uuid, Order
+from market_maker.database import Database
 from market_maker.clearing_house import ClearingOrder, ClearingHouse
 
 import random
@@ -30,6 +30,7 @@ class OrderBook:
         self.bid_heap = database.bid_heap
         self.ask_heap = database.ask_heap
         self.clearing_house = database.clearing_house
+        self.database = database
         # self.logger = Logger()
 
     def set_clearing_house(self, clearing_house: ClearingHouse):
@@ -107,24 +108,18 @@ class OrderBook:
                     raise ValueError("No bids to fill market order")
                 
                 if top_bid.quantity == order.quantity:
-                    logger.info(f"MARKET MAKER: Selling {order.quantity} at {top_bid.price:.2f}")
-                    co = ClearingOrder(buyside_account_id=top_bid.account_id, sellside_account_id=order.account_id, price=top_bid.price, quantity=order.quantity)
-                    self.clearing_house.add_clearing_order(co)
+                    self.log_order(top_bid.account_id, order.account_id, OrderSide.SELL, order.quantity, top_bid.price)
                     self.bid_heap.pop_top_bid()
                     order.quantity = 0
 
                 elif top_bid.quantity > order.quantity:
-                    logger.info(f"MARKET MAKER: Selling {order.quantity} at {top_bid.price:.2f}")
-                    co = ClearingOrder(buyside_account_id=top_bid.account_id, sellside_account_id=order.account_id, price=top_bid.price, quantity=order.quantity)
-                    self.clearing_house.add_clearing_order(co)
+                    self.log_order(top_bid.account_id, order.account_id, OrderSide.SELL, order.quantity, top_bid.price)
                     # Edit the top bid quantity in place in the heap
                     self.bid_heap.order_dict[top_bid.price].order_queue[0].quantity -= order.quantity
                     order.quantity = 0
 
                 elif top_bid.quantity < order.quantity:
-                    logger.info(f"MARKET MAKER: Selling {top_bid.quantity} at {top_bid.price:.2f}")
-                    co = ClearingOrder(buyside_account_id=top_bid.account_id, sellside_account_id=order.account_id, price=top_bid.price, quantity=top_bid.quantity)
-                    self.clearing_house.add_clearing_order(co)
+                    self.log_order(top_bid.account_id, order.account_id, OrderSide.SELL, top_bid.quantity, top_bid.price)
                     order.quantity -= top_bid.quantity
                     self.bid_heap.pop_top_bid()
 
@@ -143,26 +138,35 @@ class OrderBook:
                     raise ValueError("No asks to fill market order")
                 
                 if bottom_ask.quantity == order.quantity:
-                    logger.info(f"MARKET MAKER: Buying {order.quantity} at {bottom_ask.price:.2f}")
-                    co = ClearingOrder(buyside_account_id=order.account_id, sellside_account_id=bottom_ask.account_id, price=bottom_ask.price, quantity=order.quantity)
-                    self.clearing_house.add_clearing_order(co)
+                    self.log_order(order.account_id, bottom_ask.account_id, OrderSide.BUY, order.quantity, bottom_ask.price)
                     self.ask_heap.pop_bottom_ask()
                     order.quantity = 0
 
                 elif bottom_ask.quantity > order.quantity:
-                    logger.info(f"MARKET MAKER: Buying {order.quantity} at {bottom_ask.price:.2f}")
-                    co = ClearingOrder(buyside_account_id=order.account_id, sellside_account_id=bottom_ask.account_id, price=bottom_ask.price, quantity=order.quantity)
-                    self.clearing_house.add_clearing_order(co)
+                    self.log_order(order.account_id, bottom_ask.account_id, OrderSide.BUY, order.quantity, bottom_ask.price)
                     # Edit the top bid quantity in place in the heap
                     self.ask_heap.order_dict[bottom_ask.price].order_queue[0].quantity -= order.quantity
                     order.quantity = 0
                     
                 elif bottom_ask.quantity < order.quantity:
-                    logger.info(f"MARKET MAKER: Buying {bottom_ask.quantity} at {bottom_ask.price:.2f}")
-                    co = ClearingOrder(buyside_account_id=order.account_id, sellside_account_id=bottom_ask.account_id, price=bottom_ask.price, quantity=bottom_ask.quantity)
-                    self.clearing_house.add_clearing_order(co)
+                    self.log_order(order.account_id, bottom_ask.account_id, OrderSide.BUY, bottom_ask.quantity, bottom_ask.price)
                     order.quantity -= bottom_ask.quantity
                     self.ask_heap.pop_bottom_ask()
+
+    def log_order(self, buyside_account_id: str, sellside_account_id: str, side: OrderSide, quantity: int, price: float):
+        if side == OrderSide.BUY:
+            logger.debug(f"MARKET MAKER: Buying {quantity} at {price:.2f}")
+            co = ClearingOrder(buyside_account_id=buyside_account_id, sellside_account_id=sellside_account_id, price=price, quantity=quantity)
+            self.clearing_house.add_clearing_order(co)
+            self.database.last_trade = (price, quantity)
+            self.database.snapshot()
+
+        elif side == OrderSide.SELL:
+            logger.debug(f"MARKET MAKER: Selling {quantity} at {price:.2f}")
+            co = ClearingOrder(buyside_account_id=buyside_account_id, sellside_account_id=sellside_account_id, price=price, quantity=quantity)
+            self.clearing_house.add_clearing_order(co)
+            self.database.last_trade = (price, quantity)
+            self.database.snapshot()
 
     def crossed_spread(self, order: Order) -> bool:
         """Check if an order crosses the current bid-ask spread,
@@ -185,18 +189,6 @@ class OrderBook:
             if top_bid is None:
                 return False
             return order.price < top_bid.price
-        
-    def get_reference_price(self) -> float:
-        """Get the reference price of the order book.
-        Returns the midpoint of the highest bid and lowest ask.
-        """
-        if self.bid_heap.peek_top_bid() is None:
-            return self.ask_heap.peek_bottom_ask().price
-        
-        if self.ask_heap.peek_bottom_ask() is None:
-            return self.bid_heap.peek_top_bid().price
-        
-        return (self.bid_heap.peek_top_bid().price + self.ask_heap.peek_bottom_ask().price) / 2
 
     # ----------------- POPULATING ORDER BOOK -----------------
     def populate_randomly(self, center_price: float, deviance: float, num_orders: int):
@@ -320,7 +312,7 @@ class OrderBook:
                 output_str += f"{order} "
             idx += 1
 
-        output_str += f"\nRef:    ${self.get_reference_price():.3f}"
+        output_str += f"\nRef:    ${self.database.get_reference_price():.3f}"
 
         output_str += f"\nBids:"
         idx = 0

@@ -1,12 +1,14 @@
 import zmq
 import logging
-
+import threading
 from agents.base_trading_agent import DumbTradingAgent
 from utils import mini_uuid
 logger = logging.getLogger(__name__)
 
-class AgentOrchestrator:
+class AgentOrchestrator(threading.Thread):
     def __init__(self):
+        super().__init__()
+        self._running = True    
         self.agents = []
         self.dumb_agents_context = zmq.Context()
 
@@ -18,8 +20,9 @@ class AgentOrchestrator:
             agent.start()
 
     def run(self):
-        for agent in self.agents:
-            agent.run()
+        while self._running:
+            for agent in self.agents:
+                agent.run()
 
     def stop(self):
         logger.info("Stopping all agents")
@@ -28,5 +31,5 @@ class AgentOrchestrator:
             agent.join()
 
         self.dumb_agents_context.term()
-
+        self._running = False
     

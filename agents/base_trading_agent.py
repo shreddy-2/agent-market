@@ -6,9 +6,8 @@ import time
 import logging
 from datetime import datetime
 
-from market_maker.database import Order  
 from config import ZMQConfig
-from utils import OrderSide, OrderType, Message, MessageType
+from utils import OrderSide, OrderType, Message, MessageType, Order
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +20,12 @@ class BaseTradingAgent:
         self.order_socket = self.context.socket(zmq.PUSH)
         self.order_socket.connect(f"{ZMQConfig.ORDER_ROUTER_HOST}:{ZMQConfig.ORDER_ROUTER_PORT}")
 
-        self.market_data_socket = self.context.socket(zmq.SUB)
-        self.market_data_socket.connect(f"{ZMQConfig.DATA_ROUTER_HOST}:{ZMQConfig.DATA_ROUTER_PORT}")
+        self.market_data_sub_socket = self.context.socket(zmq.SUB)
+        self.market_data_sub_socket.connect(f"{ZMQConfig.DATA_ROUTER_PUB_HOST}:{ZMQConfig.DATA_ROUTER_PUB_PORT}")
+        self.market_data_sub_socket.subscribe("")
+
+        self.market_data_req_socket = self.context.socket(zmq.REQ)
+        self.market_data_req_socket.connect(f"{ZMQConfig.DATA_ROUTER_REP_HOST}:{ZMQConfig.DATA_ROUTER_REP_PORT}")
 
         self.orchestrator_commands_socket = self.context.socket(zmq.SUB)
         self.orchestrator_commands_socket.connect(f"{ZMQConfig.ORCHESTRATOR_OUT_HOST}:{ZMQConfig.ORCHESTRATOR_OUT_PORT}")
@@ -32,13 +35,13 @@ class BaseTradingAgent:
 
         # Handle incoming messages with Poller
         self.poller = zmq.Poller()
-        self.poller.register(self.market_data_socket, zmq.POLLIN)
+        self.poller.register(self.market_data_sub_socket, zmq.POLLIN)
         self.poller.register(self.orchestrator_commands_socket, zmq.POLLIN)
         
 
     def send_order(self, order: Order):
         try:
-            message = Message(message_type=MessageType.ORDER, data=order.model_dump())
+            message = Message(message_type=MessageType.ORDER, data=order)
             self.order_socket.send_json(message.model_dump())
         except Exception as e:
             logger.error(f"Error sending order: {e}")
@@ -58,8 +61,8 @@ class BaseTradingAgent:
             socks = dict(self.poller.poll())
             messages = []
 
-            if self.market_data_socket in socks:
-                message = Message(message_type=MessageType.MARKET_DATA, data=self.market_data_socket.recv_json())
+            if self.market_data_sub_socket in socks:
+                message = Message(message_type=MessageType.MARKET_DATA, data=self.market_data_sub_socket.recv_json())
                 messages.append(message)
 
             if self.orchestrator_commands_socket in socks:
@@ -72,7 +75,7 @@ class BaseTradingAgent:
             raise e
     
     def close(self):
-        self.market_data_socket.close()
+        self.market_data_sub_socket.close()
         self.orchestrator_commands_socket.close()
         self.orchestrator_responses_socket.close()
         self.order_socket.close()
@@ -121,7 +124,7 @@ class DumbTradingAgent(BaseTradingAgent, threading.Thread):
         order = Order(side=side, quantity=quantity, order_type=OrderType.LIMIT, price=price, timestamp=None, account_id=self.agent_id)
         
         if self._running:
-            logger.info(f"AGENT {self.agent_id} sending order: {order}")
+            logger.debug(f"AGENT {self.agent_id} sending order: {order}")
             self.send_order(order)
 
     def stop(self):
