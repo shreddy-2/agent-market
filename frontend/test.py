@@ -34,8 +34,20 @@ class TestOutput(threading.Thread):
             })
         
         self.app.mount("/", StaticFiles(directory="frontend/static", html=True), name="static")
+
     def _run_server(self):
-        uvicorn.run(self.app, host="0.0.0.0", port=8000)
+        uvicorn_config = uvicorn.Config(
+            self.app,
+            host="0.0.0.0",
+            port=8000,
+            # log_config=None,
+            log_config={
+                "version": 1,
+                "disable_existing_loggers": False,
+            }
+        )
+        uvicorn_server = uvicorn.Server(uvicorn_config)
+        uvicorn_server.run()
 
     def run(self):
         logger.info("Test output running")

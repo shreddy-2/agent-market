@@ -96,7 +96,8 @@ class DumbTradingAgent(BaseTradingAgent, threading.Thread):
                 # Wait for a random amount of time between trades
                 time.sleep(random.uniform(1, 3))
 
-                # messages = self.receive_messages()
+                messages = self.receive_messages()
+                logger.info(f"Agent {self.agent_id} received {len(messages)} messages")
 
                 # TODO: Get latest market price from market data
 
